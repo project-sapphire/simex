@@ -30,7 +30,14 @@ impl Communications {
     }
 
     pub fn broadcast_rates(&self, rates: Rates) {
-        self.publisher.send_str(&rates.currency, 0);
+        self.publisher.send_str(&rates.currency, zmq::SNDMORE);
+
+        for (currency, rate) in rates.rates {
+            self.publisher.send_str(&currency, zmq::SNDMORE);
+            self.publisher.send_str(&rate.to_string(), zmq::SNDMORE);
+        }
+
+        self.publisher.send(b"", 0);
     }
 }
 

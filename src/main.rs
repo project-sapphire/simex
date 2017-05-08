@@ -3,33 +3,33 @@ extern crate log;
 extern crate simplelog;
 extern crate csv;
 
-mod com;
+pub mod com;
 
 use std::collections::HashMap;
 use std::vec::Vec;
 
 
 #[derive(Clone, Debug)]
-struct Order {
+pub struct Order {
     from: String,
     to: String,
     amount: f64,
 }
 
 #[derive(Clone, Debug)]
-struct Transaction {
+pub struct Transaction {
     order: Order,
     complete: bool,
 }
 
 #[derive(Clone, Debug)]
-struct Rates {
+pub struct Rates {
     currency: String,
     rates: HashMap<String, f64>,
 }
 
-struct Exchange {
-    time: u64,
+pub struct Exchange {
+    time: usize,
     pending_transactions: HashMap<String, Transaction>,
     data: HashMap<String, Vec<f64>>,
 }
@@ -60,10 +60,30 @@ impl Exchange {
     }
 
     fn tick(&mut self) {
+        self.time += 1;
     }
 
+    // TODO(deox): return Result<HashMap<String, f64>, String>!
     fn query(&mut self, currency: &str) -> HashMap<String, f64> {
-        HashMap::new()
+        let mut map = HashMap::new();
+
+        // TODO(deox): use try!
+        let reference_value = self.data.get(currency)
+            .unwrap().get(self.time).unwrap();
+        
+        for other_currency in self.get_currencies() {
+            if other_currency == currency {
+                continue;
+            }
+
+            // TODO(deox): use try!
+            let value = self.data.get(&other_currency)
+                .unwrap().get(self.time).unwrap();
+
+            map.insert(other_currency, reference_value / value);
+        }
+
+        map
     }
 }
 
@@ -77,7 +97,7 @@ fn main() {
     exchange.load_history("btc", "data/btc.csv");
     exchange.load_history("eth", "data/eth.csv");
 
-    let mut coms = com::Communications::new("tcp://*:1337", "tcp://*:1338");
+    let coms = com::Communications::new("tcp://*:1337", "tcp://*:1338");
 
     info!("Welcome to the SimEx simulation exchange!");
 
@@ -86,10 +106,14 @@ fn main() {
         std::thread::sleep_ms(1000);
 
         for currency in exchange.get_currencies() {
-            coms.broadcast_rates(Rates {
+            let rates = Rates {
                 currency: currency.clone(),
                 rates: exchange.query(&currency),
-            });
+            };
+
+            debug!("Broadcasting {:?}", &rates);
+
+            coms.broadcast_rates(rates);
         }
 
         exchange.tick();
