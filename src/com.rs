@@ -1,6 +1,7 @@
 extern crate zmq;
 
-use super::Rates;
+use super::prism;
+use prism::Message;
 
 
 pub struct Communications {
@@ -29,15 +30,8 @@ impl Communications {
         }
     }
 
-    pub fn broadcast_rates(&self, rates: Rates) {
-        self.publisher.send_str(&rates.currency, zmq::SNDMORE);
-
-        for (currency, rate) in rates.rates {
-            self.publisher.send_str(&currency, zmq::SNDMORE);
-            self.publisher.send_str(&rate.to_string(), zmq::SNDMORE);
-        }
-
-        self.publisher.send(b"", 0);
+    pub fn broadcast_rates(&self, rates: prism::Rate) {
+        rates.send(&self.publisher);
     }
 }
 

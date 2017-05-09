@@ -5,6 +5,7 @@ dependencies = [
  "csv 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "json 0.11.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "prism 0.1.0",
  "simplelog 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zmq 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -75,6 +76,13 @@ dependencies = [
 name = "pkg-config"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "prism"
+version = "0.1.0"
+dependencies = [
+ "zmq 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "redox_syscall"

@@ -2,11 +2,14 @@
 extern crate log;
 extern crate simplelog;
 extern crate csv;
+extern crate prism;
 
 pub mod com;
 
 use std::collections::HashMap;
 use std::vec::Vec;
+
+use prism::Message;
 
 
 #[derive(Clone, Debug)]
@@ -20,12 +23,6 @@ pub struct Order {
 pub struct Transaction {
     order: Order,
     complete: bool,
-}
-
-#[derive(Clone, Debug)]
-pub struct Rates {
-    currency: String,
-    rates: HashMap<String, f64>,
 }
 
 pub struct Exchange {
@@ -96,6 +93,7 @@ fn main() {
     let mut exchange = Exchange::new();
     exchange.load_history("btc", "data/btc.csv");
     exchange.load_history("eth", "data/eth.csv");
+    exchange.load_history("xrp", "data/eth.csv");
 
     let coms = com::Communications::new("tcp://*:1337", "tcp://*:1338");
 
@@ -106,9 +104,9 @@ fn main() {
         std::thread::sleep_ms(1000);
 
         for currency in exchange.get_currencies() {
-            let rates = Rates {
+            let rates = prism::Rate {
                 currency: currency.clone(),
-                rates: exchange.query(&currency),
+                values: exchange.query(&currency),
             };
 
             debug!("Broadcasting {:?}", &rates);

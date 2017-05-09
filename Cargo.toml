@@ -9,3 +9,4 @@ simplelog = "0.4.2"
 zmq = "0.8"
 json = "0.11.6"
 csv = "0.15.0"
+prism = { path = "../prism-rust" }
