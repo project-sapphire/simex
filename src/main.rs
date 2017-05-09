@@ -104,9 +104,10 @@ fn main() {
         std::thread::sleep_ms(1000);
 
         for currency in exchange.get_currencies() {
-            let rates = prism::Rate {
+            let rates = prism::RateUpdate {
+                exchange: "9ef31d1e-0d44-444f-b3f9-32ef34156d1d".to_string(),
                 currency: currency.clone(),
-                values: exchange.query(&currency),
+                rate: prism::Rate { values: exchange.query(&currency) },
             };
 
             debug!("Broadcasting {:?}", &rates);

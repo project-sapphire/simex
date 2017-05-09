@@ -30,8 +30,8 @@ impl Communications {
         }
     }
 
-    pub fn broadcast_rates(&self, rates: prism::Rate) {
-        rates.send(&self.publisher);
+    pub fn broadcast_rates(&self, rates: prism::RateUpdate) {
+        rates.send(&self.publisher, 0);
     }
 }
 
