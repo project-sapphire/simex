@@ -37,7 +37,7 @@ impl Communications {
         rates.send(&self.publisher, 0);
     }
 
-    pub fn pop_query(&self, deadline: Instant) -> Result<Option<prism::ExchangeQuery>, prism::ReceiveError> {
+    pub fn pop_query(&self, deadline: Instant) -> Result<Option<prism::ExchangeRequest>, prism::ReceiveError> {
         // how much time is left until the deadline?
         let time_left = deadline - Instant::now();
         let time_left = time_left.as_secs() * 1000 + (time_left.subsec_nanos() / 1000000) as u64;
@@ -47,7 +47,7 @@ impl Communications {
         self.replier.set_rcvtimeo(time_left as i32);
 
         // receive, but time out no later than `deadline`
-        let r = prism::ExchangeQuery::receive(&self.replier, 0);
+        let r = prism::ExchangeRequest::receive(&self.replier, 0);
         debug!("{:?}", &r);
         r
     }

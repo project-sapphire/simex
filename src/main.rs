@@ -136,11 +136,11 @@ fn main() {
 
         // this fucks out when we've read one because the socket returns
         // an error immediately
-        while let Ok(Some(query)) = coms.pop_query(deadline) {
-            info!("Received query: {:?}", query);
+        while let Ok(Some(request)) = coms.pop_query(deadline) {
+            info!("Received query: {:?} for {} on {}", request.query, request.currency, request.exchange);
 
-            coms.reply(&match query {
-                prism::ExchangeQuery::History => exchange.query_history("btc", 5000),
+            coms.reply(&match request.query {
+                prism::ExchangeQuery::History(age) => exchange.query_history(&request.currency, age),
                 _ => continue
             }).unwrap();
         }
@@ -150,7 +150,6 @@ fn main() {
         if now < deadline {
             std::thread::sleep(deadline - now);
         }
-
 
         exchange.tick();
     }
