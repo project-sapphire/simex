@@ -1,5 +1,8 @@
 extern crate zmq;
 
+use std::time::{Instant, Duration};
+use std::fmt::Debug;
+
 use super::prism;
 use prism::Message;
 
@@ -32,6 +35,26 @@ impl Communications {
 
     pub fn broadcast_rates(&self, rates: prism::RateUpdate) {
         rates.send(&self.publisher, 0);
+    }
+
+    pub fn pop_query(&self, deadline: Instant) -> Result<Option<prism::ExchangeQuery>, prism::ReceiveError> {
+        // how much time is left until the deadline?
+        let time_left = deadline - Instant::now();
+        let time_left = time_left.as_secs() * 1000 + (time_left.subsec_nanos() / 1000000) as u64;
+        trace!("Time-out in {}ms", time_left);
+
+        // set timeout
+        self.replier.set_rcvtimeo(time_left as i32);
+
+        // receive, but time out no later than `deadline`
+        let r = prism::ExchangeQuery::receive(&self.replier, 0);
+        debug!("{:?}", &r);
+        r
+    }
+
+    pub fn reply<T: Message + Debug>(&self, reply: &T) -> Result<(), zmq::Error> {
+        debug!("Replying: {:?}", reply);
+        reply.send(&self.replier, 0)
     }
 }
 
