@@ -1,103 +1,14 @@
 #[macro_use]
 extern crate log;
 extern crate simplelog;
-extern crate csv;
 extern crate prism;
 
-pub mod com;
-
-use std::collections::HashMap;
-use std::vec::Vec;
+mod com;
+mod exchange;
 
 use prism::Message;
 
-
-#[derive(Clone, Debug)]
-pub struct Order {
-    from: String,
-    to: String,
-    amount: f64,
-}
-
-#[derive(Clone, Debug)]
-pub struct Transaction {
-    order: Order,
-    complete: bool,
-}
-
-pub struct Exchange {
-    time: usize,
-    pending_transactions: HashMap<String, Transaction>,
-    data: HashMap<String, Vec<f64>>,
-}
-
-impl Exchange {
-    fn new() -> Exchange {
-        Exchange {
-            time: 0,
-            pending_transactions: HashMap::new(),
-            data: HashMap::new(),
-        }
-    }
-
-    fn load_history(&mut self, currency: &str, file: &str) {
-        let mut reader = csv::Reader::from_file(file)
-            .expect("failed to open history file")
-            .has_headers(false);
-
-        self.data.insert(currency.to_string(), reader.decode().map(|row| {
-            let (_, value): (String, f64) = row.unwrap(); value
-        }).collect::<Vec<f64>>());
-
-        info!("Loaded history for {}", currency.to_uppercase());
-    }
-
-    fn get_currencies(&self) -> Vec<String> {
-        self.data.keys().map(|x|x.clone()).collect()
-    }
-
-    fn tick(&mut self) {
-        self.time += 1;
-    }
-
-    // TODO(deox): return Result<HashMap<String, f64>, String>!
-    fn query(&mut self, currency: &str) -> HashMap<String, f64> {
-        self.query_at(currency, self.time)
-    }
-
-    fn query_history(&self, currency: &str, age: u64) -> Vec<prism::Rate> {
-        let mut history = Vec::new();
-        for i in (self.time - (age / 1000) as usize)..self.time {
-            history.push(prism::Rate {
-                values: self.query_at(currency, i),
-                timestamp: (i as u64) * 1000
-            });
-        }
-        history
-    }
-
-    fn query_at(&self, currency: &str, time: usize) -> HashMap<String, f64> {
-        let mut map = HashMap::new();
-
-        // TODO(deox): use try!
-        let reference_value = self.data.get(currency)
-            .unwrap().get(self.time).unwrap();
-        
-        for other_currency in self.get_currencies() {
-            if other_currency == currency {
-                continue;
-            }
-
-            // TODO(deox): use try!
-            let value = self.data.get(&other_currency)
-                .unwrap().get(self.time).unwrap();
-
-            map.insert(other_currency, reference_value / value);
-        }
-
-        map
-    }
-}
+use exchange::Exchange;
 
 
 fn main() {
@@ -108,9 +19,8 @@ fn main() {
     let mut exchange = Exchange::new();
     exchange.load_history("btc", "data/btc.csv");
     exchange.load_history("eth", "data/eth.csv");
-    exchange.load_history("xrp", "data/eth.csv");
 
-    let coms = com::Communications::new("tcp://*:1337", "tcp://*:1338");
+    let coms = com::Communications::new("tcp://*:1337", "tcp://*:1338", "tcp://*:1339");
 
     info!("Welcome to the SimEx simulation exchange!");
 
@@ -136,13 +46,21 @@ fn main() {
 
         // this fucks out when we've read one because the socket returns
         // an error immediately
-        while let Ok(Some(request)) = coms.pop_query(deadline) {
-            info!("Received query: {:?} for {} on {}", request.query, request.currency, request.exchange);
-
-            coms.reply(&match request.query {
-                prism::ExchangeQuery::History(age) => exchange.query_history(&request.currency, age),
-                _ => continue
-            }).unwrap();
+        while let Ok(Some(incoming)) = coms.receive(deadline) {
+            match incoming {
+                com::Incoming::Request(request) => {
+                    info!("Received query: {:?} for {} on {}", request.query, request.currency, request.exchange);
+                    match request.query {
+                        prism::ExchangeQuery::History(age) => coms.reply(&exchange.query_history(&request.currency, age)),
+                        prism::ExchangeQuery::Status(transaction) => panic!("`status' not implemented"),
+                        prism::ExchangeQuery::Exchange(from, to, amount) => coms.reply(&exchange.initiate_transaction(&from, &to, amount)),
+                    }.unwrap();
+                },
+                com::Incoming::Payment(address) => {
+                    info!("Received payment: {}", address);
+                    coms.confirm_payment(exchange.finalize_transaction(&address)).unwrap();
+                }
+            };
         }
 
         // sleep for the rest of the time

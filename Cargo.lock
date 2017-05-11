@@ -6,6 +6,7 @@ dependencies = [
  "json 0.11.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "prism 0.1.0",
+ "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "simplelog 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zmq 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -82,6 +83,14 @@ name = "prism"
 version = "0.1.0"
 dependencies = [
  "zmq 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rand"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -169,6 +178,7 @@ dependencies = [
 "checksum memchr 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1dbccc0e46f1ea47b9f17e6d67c5a96bd27030519c519c9c91327e31275a47b4"
 "checksum metadeps 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "829fffe7ea1d747e23f64be972991bc516b2f1ac2ae4a3b33d8bea150c410151"
 "checksum pkg-config 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)" = "3a8b4c6b8165cd1a1cd4b9b120978131389f64bdaf456435caa41e630edba903"
+"checksum rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "022e0636ec2519ddae48154b028864bdce4eaf7d35226ab8e65c611be97b189d"
 "checksum redox_syscall 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)" = "29dbdfd4b9df8ab31dec47c6087b7b13cbf4a776f335e4de8efba8288dda075b"
 "checksum rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)" = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
 "checksum simplelog 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "2c3a63f2b74bc3359ed6050da62e32cc0e10a162c4f62a0c1d80cd89d432234b"
