@@ -53,7 +53,7 @@ fn main() {
                     match request.query {
                         prism::ExchangeQuery::History(age) => coms.reply(&exchange.query_history(&request.currency, age)),
                         prism::ExchangeQuery::Status(transaction) => panic!("`status' not implemented"),
-                        prism::ExchangeQuery::Exchange(from, to, amount) => coms.reply(&exchange.initiate_transaction(&from, &to, amount)),
+                        prism::ExchangeQuery::Exchange(to, amount, _, destination) => coms.reply(&exchange.initiate_transaction(&request.currency, &to, amount, &destination)),
                     }.unwrap();
                 },
                 com::Incoming::Payment(address) => {

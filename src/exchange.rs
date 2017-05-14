@@ -14,6 +14,7 @@ pub struct Order {
     from: String,
     to: String,
     amount: f64,
+    destination: String,
 }
 
 #[derive(Clone, Debug)]
@@ -95,7 +96,7 @@ impl Exchange {
         map
     }
 
-    pub fn initiate_transaction(&mut self, from: &str, to: &str, amount: f64) -> prism::Invoice {
+    pub fn initiate_transaction(&mut self, from: &str, to: &str, amount: f64, destination: &str) -> prism::Invoice {
         // create random fake address
         let mut rng = rand::StdRng::new().unwrap();
         let address: String = rng.gen_ascii_chars().take(16).collect();
@@ -107,6 +108,7 @@ impl Exchange {
                 from: from.to_string(),
                 to: to.to_string(),
                 amount: amount,
+                destination: destination.to_string(),
             },
             complete: false,
         });
