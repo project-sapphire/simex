@@ -120,9 +120,9 @@ impl Exchange {
         }
     }
 
-    pub fn finalize_transaction(&mut self, address: &str) -> f64 {
+    pub fn finalize_transaction(&mut self, address: &str) -> (String, f64) {
         let transaction = match self.pending_transactions.get(address) {
-            None => return 0.0,
+            None => return ("xxx".to_string(), 0.0),
             Some(x) => x.clone(),
         };
 
@@ -135,6 +135,6 @@ impl Exchange {
 
         let amount = self.query(&transaction.order.from).get(&transaction.order.to).unwrap() * transaction.order.amount;
         info!("Transaction {} finalized: {} {} to {} {}", address, transaction.order.from, transaction.order.amount, transaction.order.to, amount);
-        amount
+        (transaction.order.to, amount)
     }
 }

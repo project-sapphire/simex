@@ -90,8 +90,9 @@ impl Communications {
         reply.send(&self.replier, 0)
     }
 
-    pub fn confirm_payment(&self, amount: f64) -> Result<(), zmq::Error> {
+    pub fn confirm_payment(&self, (currency, amount): (String, f64)) -> Result<(), zmq::Error> {
         debug!("Confirming payment: {:?}", amount);
+        self.backdoor.send_str(&currency, zmq::SNDMORE)?;
         amount.send(&self.backdoor, 0)
     }
 }
