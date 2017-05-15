@@ -16,9 +16,9 @@ fn main() {
                                 simplelog::Config::default()).unwrap();
     info!("Starting simulation exchange...");
 
-    let mut exchange = Exchange::new();
-    exchange.load_history("btc", "data/btc.csv");
-    exchange.load_history("eth", "data/eth.csv");
+    let mut exchange = Exchange::new("../data/history/");
+    //exchange.load_history("btc", "data/btc.csv");
+    //exchange.load_history("eth", "data/eth.csv");
 
     let coms = com::Communications::new("tcp://*:1337", "tcp://*:1338", "tcp://*:1339");
 
@@ -31,7 +31,7 @@ fn main() {
                 exchange: "9ef31d1e-0d44-444f-b3f9-32ef34156d1d".to_string(),
                 currency: currency.clone(),
                 rate: prism::Rate {
-                    values: exchange.query(&currency),
+                    values: exchange.query(&currency).unwrap_or(std::collections::HashMap::new()),
                     timestamp: exchange.time as u64,
                 },
             };
